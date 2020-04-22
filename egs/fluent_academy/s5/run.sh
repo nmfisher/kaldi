@@ -47,7 +47,7 @@ if [ $stage -le 6 ]; then
 fi
 
 if [ $stage -le 7 ]; then
-  local/train_mono_w2v.sh --nj 1 --cmd "$train_cmd" --boost-silence 1.25 --totgauss 3000 \
+  local/train_mono_w2v.sh --nj 1 --cmd "$train_cmd" --totgauss 1200 --num_iters 40 \
     data/train data/lang exp/mono_w2v || exit 1;
 
   utils/mkgraph.sh data/lang_combined_tg exp/mono_w2v exp/mono_w2v/graph_tg || exit 1;
@@ -58,21 +58,31 @@ if [ $stage -le 8 ]; then
   local/decode.sh --cmd "$decode_cmd" --nj 1 \
         exp/mono_w2v/graph_tg data/test exp/mono_w2v/decode_test_tg || exit 1;
 fi
-exit;
-if [ $stage -le 9 ]; then  
-  steps/align_si.sh --boost-silence 1.25 --nj 1 --cmd "$train_cmd" \
-    data/train data/lang exp/mono exp/mono_ali || exit 1;
-  steps/train_deltas.sh --boost-silence 1.25 --cmd "$train_cmd" 2500 20000 \
-    data/train data/lang exp/mono_ali exp/tri1a || exit 1;
 
-  utils/mkgraph.sh data/lang_combined_tg exp/tri1a exp/tri1a/graph_tg || exit 1;
+echo "######################"
+cat exp/mono_w2v/decode_test_tg/scoring_kaldi/best_cer
+cat exp/mono_w2v/decode_test_tg/scoring_kaldi/best_wer
+echo "######################"
+
+if [ $stage -le 9 ]; then  
+  local/align_si_w2v.sh --boost-silence 1.25 --nj 1 --cmd "$train_cmd" \
+    data/train data/lang exp/mono_w2v exp/mono_ali_w2v || exit 1;
+  local/train_deltas_w2v.sh --boost-silence 1.25 --cmd "$train_cmd" 2500 20000 \
+    data/train data/lang exp/mono_ali_w2v exp/tri1a_w2v || exit 1;
+
+  utils/mkgraph.sh data/lang_combined_tg exp/tri1a_w2v exp/tri1a_w2v/graph_tg || exit 1;
 fi
 
 if [ $stage -le 10 ]; then
-  steps/decode.sh --cmd "$decode_cmd" --config conf/decode.config --nj 1 \
-        exp/tri1a/graph_tg data/test exp/tri1a/decode_test_tg || exit 1;
+  local/decode.sh --cmd "$decode_cmd" --config conf/decode.config --nj 1 \
+        exp/tri1a_w2v/graph_tg data/test exp/tri1a_w2v/decode_test_tg || exit 1;
 
 fi
+
+echo "######################"
+cat exp/tri1a_w2v/decode_test_tg/scoring_kaldi/best_cer
+cat exp/tri1a_w2v/decode_test_tg/scoring_kaldi/best_wer
+echo "######################"
 
 if [ $stage -le 11 ]; then
   # train tri1b using aishell + primewords + stcmds + thchs (~280k)

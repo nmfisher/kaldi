@@ -54,7 +54,7 @@ if [ $stage -le 6 ]; then
 fi
 
 if [ $stage -le 7 ]; then
-  steps/train_mono.sh --boost-silence 1.25  --nj 1 --cmd "$train_cmd" \
+  steps/train_mono.sh --boost-silence 1.25 --nj 1 --totgauss 2000  --cmd "$train_cmd" \
     data/train data/lang exp/mono || exit 1;
 
   utils/mkgraph.sh data/lang_combined_tg exp/mono exp/mono/graph_tg || exit 1;

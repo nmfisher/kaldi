@@ -24,7 +24,7 @@ echo "**** Creating train data folder ****"
 mkdir -p $data/train
 mkdir -p $data/test
 
-num_test=100
+num_test=200
 
 # find wav audio file for train
 
@@ -37,7 +37,7 @@ echo "Found $n_train train files, $n_test test files."
 
 for split in train test; do
 	cat $data/$split/wav.list | awk -F'/' '{print $NF}' | awk -F'.' '{print $1}' > $data/$split/utt.list
-	cat $data/$split/utt.list | awk '{print substr($1,1,3)}' > $data/$split/spk.list
+	cat $data/$split/utt.list | awk -F"_" '{print $1}' > $data/$split/spk.list
 	while read line; do
 	  tn=`dirname $line`/`basename $line .wav`.txt;
 	  cat $tn;
@@ -48,7 +48,7 @@ for split in train test; do
 	paste -d' ' $data/$split/utt.list $data/$split/text.list |\
 	  sed 's/,| |\n//g' |\
 	  local/word_segment.py |\
-	  tr '[a-z]' '[A-Z]' |\
+	  #tr '[a-z]' '[A-Z]' |\
 	  awk '{if (NF > 1) print $0;}' > $data/$split/text
 
 	for file in wav.scp utt2spk text; do
@@ -57,7 +57,7 @@ for split in train test; do
 
 	utils/utt2spk_to_spk2utt.pl $data/$split/utt2spk > $data/$split/spk2utt
 
-	rm -r $data/$split/{wav,utt,spk,text}.list
+	#rm -r $data/$split/{wav,utt,spk,text}.list
 
 	./utils/validate_data_dir.sh --no-feats $data/$split || exit 1;
 done

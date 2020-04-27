@@ -159,7 +159,7 @@ if(${KALDI_USE_PATCH_NUMBER})
 endif()
 
 get_third_party(openfst)
-set(OPENFST_ROOT_DIR ${CMAKE_CURRENT_BINARY_DIR}/openfst)
+set(OPENFST_ROOT_DIR ${CMAKE_BINARY_DIR}/openfst)
 include(third_party/openfst_lib_target)
 link_libraries(fst)
 
@@ -203,9 +203,22 @@ if(CUDA_FOUND)
 endif()
 
 # add all native executables
+add_subdirectory(src/bin)
 add_subdirectory(src/gmmbin)
 add_subdirectory(src/featbin)
+add_subdirectory(src/sgmm2bin)
+add_subdirectory(src/fstbin)
+add_subdirectory(src/lmbin)
+add_subdirectory(src/latbin)
+add_subdirectory(src/nnetbin)
+add_subdirectory(src/nnet2bin)
+add_subdirectory(src/nnet3bin)
+add_subdirectory(src/rnnlmbin)
+add_subdirectory(src/chainbin)
+add_subdirectory(src/ivectorbin)
 add_subdirectory(src/onlinebin)
+add_subdirectory(src/online2bin)
+add_subdirectory(src/kwsbin)
 
 # add all cuda executables
 if(CUDA_FOUND)
